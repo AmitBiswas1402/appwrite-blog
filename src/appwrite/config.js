@@ -1,5 +1,5 @@
 import conf from '../conf/conf';
-import { Client, Databases, Storage, Query } from 'appwrite';
+import { Client, Databases, Storage, Query, ID } from 'appwrite';
 
 export class Service {
     client = new Client()
@@ -65,17 +65,57 @@ export class Service {
             return false
         }
     }
+
+    async deletePost(slug) {
+        try {
+            await this.databases.deleteDocument(
+                conf.appwriteDatabaseId,
+                conf.appwriteCollectionId,
+                slug
+            )
+            return true
+        } catch (error) {
+            console.log("Appwrite service ::  deletePost() :: ", error);
+            return false
+        }
+    }
+
+    // storage service
+
+    async uploadFile(file) {
+        try {
+            return await this.bucket.createFile(
+                conf.appwriteBucketId,
+                ID.unique(),
+                file
+            )
+            
+        } catch (error) {
+            console.log("Appwrite service ::  uploadFile() :: ", error);
+            return false
+        }
+    }
+
+    async deleteFile(fileId) {
+        try {
+            return await this.bucket.deleteFile(
+                conf.appwriteBucketId,
+                fileId
+            )
+            
+        } catch (error) {
+            console.log("Appwrite service ::  deleteFile() :: ", error);
+            return false
+        }
+    }
+
+    getFilePreview(fileId) {
+        return this.bucket.getFilePreview(
+            conf.appwriteBucketId,
+            fileId
+        ).href
+    }
 }
 
-const sdk = require('node-appwrite');
-
-// Init SDK
-const client = new sdk.Client();
-
-const databases = new sdk.Databases(client);
-
-client
-    .setEndpoint('https://cloud.appwrite.io/v1') // Your API Endpoint
-    .setProject('<PROJECT_ID>') // Your project ID
-    .setKey('919c2d18fb5d4...a2ae413da83346ad2') // Your secret API key
-;
+const service = new Service()
+export default service
